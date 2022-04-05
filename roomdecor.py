@@ -30,7 +30,7 @@ from random import randint
 import inflect
 _INFLECT = inflect.engine()
 
-class DecorObject(Object):
+class DecorObject(DefaultObject):
     """
     Base class for any objects that can be used to decorate rooms.
     """
@@ -84,7 +84,7 @@ class DecorObject(Object):
                 pass
         return success
 
-class DecorRoom(Room):
+class DecorRoom(DefaultRoom):
     """
     Rooms that can be decorated with decor objects.
     """

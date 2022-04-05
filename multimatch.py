@@ -23,7 +23,7 @@ Notes:
     *exactly* how that works before trying it!
 """
 
-class MMCharacter():
+class MMCharacter:
     """
     A mixin class for implementing interactive multimatches.
     """
@@ -74,7 +74,8 @@ class DummyCmd():
     
     def func(self):
         caller = self.caller
-    
+        arg = self.args
+				
         # Perform your normal object search here.
         # The `quiet` flag is necessary to skip the build-in multimatch 
         result = caller.search(arg, quiet=True)

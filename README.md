@@ -1,5 +1,5 @@
 # Evennia Things
-Modules and code snippets I've written, for Evennia v1.0
+Modules and code snippets I've written, for [Evennia](https://evennia.com) v1.0
 
 Anything here could most likely be backported to v0.9.5 but I wouldn't guarantee it.
 

@@ -49,6 +49,8 @@ class DecorObject(DefaultObject):
             if not drop:
                 doer.msg("You can't put things there.")
                 return
+        # fallback position if none was set
+        position = "here" if position == True
         # set the placement status
         if position[-1] in ('.','!','?',',',';',':'):
             position = position[:-1]

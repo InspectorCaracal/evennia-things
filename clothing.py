@@ -17,6 +17,34 @@ inherit from the `Clothing` class below for additional functionality, which is r
 for actual clothing items and anything which should have visible detail when worn.
     Note: The tag category for wearable items is configurable in settings.
 
+
+## Example
+
+Let's say you've set up the module for your `Character` class with all the default settings,
+and you're starting off with a simple object.
+
+> create wrist watch = A simple clock face on a leather band.
+
+The new `wrist watch` is your default object class (probably Object) and has no tags. If
+you try to wear it, it won't let you.
+
+To make it a simple wearable watch, add a clothing tag to it.
+
+> tag wrist watch = accessory:clothing
+> wear wrist watch
+
+Looking at your character (e.g. Monty), you'll see the following in your description:
+    `Monty is wearing a wrist watch.`
+
+Now change the type of your wrist watch to the `Clothing` typeclass. Assuming the module
+is in your `world` dir:
+
+> type wrist watch = world.clothing.Clothing
+
+Looking at your character will now show more detail on the worn watch:
+    `Monty is wearing a simple clock face on a leather band.`
+
+
 ## Options
 
 Several options can be defined in `settings.py` to modify how the module works.

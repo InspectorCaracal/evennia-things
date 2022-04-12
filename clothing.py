@@ -466,17 +466,7 @@ class CmdWear(MuxCommand):
                 caller.msg("Usage: wear <obj>")
             return
 
-        result = caller.search(self.lhs, candidates=caller.contents, quiet=True)
-        if len(result) == 0:
-            caller.msg("You don't have any |w%s|n." % target)
-            return
-        elif len(result) > 1:
-            caller.multimatch_msg(result)
-            index = yield("Enter a number (or |wc|n to cancel):")
-            obj = caller.process_multimatch(index, result)
-        else:
-            obj = result[0]
-
+        obj = caller.search(self.lhs, candidates=caller.contents)
         if not obj:
             return
 
@@ -525,17 +515,7 @@ class CmdRemove(MuxCommand):
             caller.msg("Usage: remove <object>")
             return
         
-        result = caller.search(self.args.strip(), candidates=caller.contents, quiet=True)
-        if len(result) == 0:
-            caller.msg("You don't have any |w%s|n." % target)
-            return
-        elif len(result) > 1:
-            caller.multimatch_msg(result)
-            index = yield("Enter a number (or |wc|n to cancel):")
-            obj = caller.process_multimatch(index, result)
-        else:
-            obj = result[0]
-
+        obj = caller.search(self.args.strip(), candidates=caller.contents)
         if not obj:
             return
 
@@ -575,17 +555,7 @@ class CmdCover(MuxCommand):
         objs = []
         
         for arg in argslist:
-            result = caller.search(arg, candidates=caller.contents, quiet=True)
-            if len(result) == 0:
-                caller.msg("You don't have any |w%s|n." % arg)
-                return
-            elif len(result) > 1:
-                caller.multimatch_msg(result)
-                index = yield("Enter a number (or |wc|n to cancel):")
-                obj = caller.process_multimatch(index, result)
-            else:
-                obj = result[0]
-
+            obj = caller.search(arg, candidates=caller.contents)
             if not obj:
                 return
             else:
@@ -633,17 +603,7 @@ class CmdUncover(MuxCommand):
             caller.msg("Usage: uncover <worn clothing object>")
             return
         target = self.args.strip()
-        result = caller.search(target, candidates=caller.contents, quiet=True)
-        if len(result) == 0:
-            caller.msg("You don't have any |w%s|n." % target)
-            return
-        elif len(result) > 1:
-            caller.multimatch_msg(result)
-            index = yield("Enter a number (or |wc|n to cancel):")
-            obj = caller.process_multimatch(index, result)
-        else:
-            obj = result[0]
-
+        obj = caller.search(target, candidates=caller.contents)
         if not obj:
             return
 

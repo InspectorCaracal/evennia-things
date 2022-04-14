@@ -36,7 +36,7 @@ from evennia.utils import gametime, delay
 
 class GrowthHandler():
     """
-    Tracks a character's worn objects and visible outfit.
+    Tracks an objects age and change over time.
     """
 
     def __init__(self, obj, interval=36000):

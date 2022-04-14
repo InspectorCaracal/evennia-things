@@ -11,5 +11,6 @@ I'm also going to add unit tests for everything in here eventually, but don't ho
 ### List of Things
 * `basic_commands.py` - Extends the functionality of basic IC commands, mostly by adding inter-object functionality. e.g. "get A from B" to get an object from a container object.
 * `clothing.py` - Initially based on the current clothing contrib, but rewritten for v1.0 updates and ease of customization. (Don't try backporting this one, just use the current contrib instead.)
+* `growables.py` - Lets your objects change over time. Designed as a flexible handler, it should let you implement anything from growing crops, to aging animals, and even decaying corpses.
 * `multimatch.py` - Provides an alternative multimatch system to the default of re-entering commands, by allowing commands to ask the player directly which of the matches they intended.
 * `roomdecor.py` - Adds a mechanism for decorating rooms with objects. The decor items can be placed in different positions within the room and are displayed as part of room's `desc` section instead of as contents. They also retain any other functionality!

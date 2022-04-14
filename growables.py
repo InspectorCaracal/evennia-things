@@ -85,6 +85,8 @@ class GrowthHandler():
         last_update = self.growth_status['last_update']
         if current_update - last_update < self.delay and not force:
             return
+        
+        self.growth_status['last_update'] = current_update
 
         if len(self.growth_stages) <= 0:
             # no stages added yet, reschedule
@@ -169,7 +171,6 @@ class GrowthHandler():
         # set delayed task for next growth
         delay(self.delay, self.grow)
 
-        self.growth_status['last_update'] = current_update
         self.growth_status['age'] = current_age
         self.growth_status['next_age'] = next_age
         self.growth_status['stage'] = new_stage

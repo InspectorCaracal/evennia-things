@@ -45,7 +45,6 @@ class GrowthHandler():
         """
         self.obj = obj
         self.delay = interval
-        None
 
         # load existing growth stage dict or initialize
         self.growth_stages = obj.attributes.get("stages", category="growth")

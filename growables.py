@@ -15,7 +15,7 @@ the object can increment its age.
 To actually allow the object to change, set growth stages via the `add` method.
 
 ```
-self.add("sprout", 1200, key="seedling", desc="A tiny seedling, just barely sprouted.")
+self.add("sprout", 60, key="seedling", desc="A tiny seedling, just barely sprouted.")
 self.add("young", 1200, key="small plant", desc="This plant is small but still growing.", leaves=True)
 ```
 

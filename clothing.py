@@ -13,7 +13,7 @@ below to add the functionality yourself.
 
 To make an item wearable, add any tag to it with the "clothing" category. The tag you set
 will define what type of clothing it is, for sorting and other limitations. You can also
-inherit from the `Clothing` class below for additional functionality, which is recommended
+inherit from the `ContribClothing` class below for additional functionality, which is recommended
 for actual clothing items and anything which should have visible detail when worn.
     Note: The tag category for wearable items is configurable in settings.
 
@@ -36,10 +36,10 @@ To make it a simple wearable watch, add a clothing tag to it.
 Looking at your character (e.g. Monty), you'll see the following in your description:
     `Monty is wearing a wrist watch.`
 
-Now change the type of your wrist watch to the `Clothing` typeclass. Assuming the module
+Now change the type of your wrist watch to the `ContribClothing` typeclass. Assuming the module
 is in your `world` dir:
 
-> type wrist watch = world.clothing.Clothing
+> type wrist watch = world.clothing.ContribClothing
 
 Looking at your character will now show more detail on the worn watch:
     `Monty is wearing a simple clock face on a leather band.`
@@ -162,7 +162,7 @@ class ClothingHandler():
     
     @property
     def all(self):
-        return self.clothing_list
+        return list(self.clothing_list)
 
     @property
     def visible(self):
@@ -203,7 +203,7 @@ class ClothingHandler():
                 message = "puts on %s" % _INFLECT.an(obj.name)
             if to_cover:
                 message += ", covering %s" % list_to_string(to_cover)
-            message += '.'
+            message = f"{self.wearer.name} {message}."
         
         return message
     
@@ -230,12 +230,12 @@ class ClothingHandler():
             message = "removes %s" % _INFLECT.an(obj.name)
             if uncovered_list:
                 message += ", revealing %s" % list_to_string(uncovered_list)
-            message += "."
+            message = f"{self.wearer.name} {message}."
             
         return message
         
     def clear(self):
-        for obj in self.clothing_list:
+        for obj in list(self.clothing_list):
             obj.db.worn = None
             obj.db.covered_by = None
             self.clothing_list.remove(obj)
@@ -266,7 +266,7 @@ class ClothingHandler():
             self.wearer.msg("You're not wearing that.")
             return False
         if obj.db.covered_by:
-            self.wearer.msg("You have to take off your %s first." % obj.db.covered_by.get_display_name(self.wearer))
+            self.wearer.msg("You can't remove that, it's covered by your %s." % obj.db.covered_by.get_display_name(self.wearer))
             return False
         
         return True
@@ -409,13 +409,13 @@ class ClothedCharacter(DefaultCharacter):
         ).strip()
 
 
-class Clothing(DefaultObject):
+class ContribClothing(DefaultObject):
     def get_worn_desc(self):
         description = self.db.desc[0].lower() + self.db.desc[1:] if len(self.db.desc) > 1 else self.db.desc.lower()
         if description[-1] in [".","!","?"]:
             description = description[:-1]
         # append worn style
-        description += self.db.worn or ""
+        description = f"{description} {self.db.worn}" if self.db.worn else description
         return description
     
    
@@ -425,39 +425,6 @@ class Clothing(DefaultObject):
                 return " (worn)"
             return " (carried)"
         return ""
-
-    def at_get(self, getter):
-        """
-        Clear the "worn" and "covered" status, in case they were somehow set.
-        """
-        self.db.worn = None
-        self.db.covered_by = None
-
-    def at_give(self, giver, getter, **kwargs):
-        """
-        Be sure to remove clothing before giving it
-        """
-        if self in giver.clothing.all:
-            giver.clothing.remove(self, quiet=True)
-    
-    def at_drop(self, dropper, **kwargs):
-        """
-        Be sure to remove clothing before dropping it
-        """
-        if self in dropper.clothing.all:
-            dropper.clothing.remove(self, quiet=True)
-    
-    def at_pre_give(self, giver, getter, **kwargs):
-        if self.db.covered_by:
-            giver.msg("You can't give that away because it's covered by %s." % _INFLECT.an(self.db.covered_by))
-            return False
-        return True
-        
-    def at_pre_drop(self, dropper, **kwargs):
-        if self.db.covered_by:
-            giver.msg("You can't drop that because it's covered by %s." % _INFLECT.an(self.db.covered_by))
-            return False
-        return True
 
 
 # COMMANDS START HERE
@@ -593,13 +560,12 @@ class CmdCover(MuxCommand):
         cover_with = objs[1]
 
         if to_cover not in caller.clothing.all:
-            caller.msg("You're not wearing %s." % _INFLECT.an(to_cover.get_display_name(caller)))
+            caller.msg("You're not wearing %s." % _INFLECT.an(to_cover.name))
             return
         
         if caller.clothing.can_cover(to_cover, cover_with):
             to_cover.db.covered_by = cover_with
-            message = "covers %s with %s." % (_INFLECT(to_cover.name), _INFLECT.an(cover_with.name))
-
+            message = f"{caller.name} covers {_INFLECT.an(to_cover.name)} with {_INFLECT.an(cover_with.name)}."
             if cover_with not in caller.clothing.all:
                 caller.clothing.add(cover_with, quiet=True )  # Put on the item to cover with if it's not on already
 
@@ -636,16 +602,16 @@ class CmdUncover(MuxCommand):
             return
 
         if obj not in caller.clothing.all:
-            caller.msg("You're not wearing %s." % _INFLECT.an(obj.get_display_name(caller)))
+            caller.msg("You're not wearing %s." % _INFLECT.an(obj.name))
             return
         covered_by = obj.db.covered_by
         if not covered_by:
-            caller.msg("Your %s isn't covered by anything." % obj.get_display_name(caller))
+            caller.msg("Your %s isn't covered by anything." % obj.name)
             return
         if covered_by.db.covered_by:
-            caller.msg("Your %s is under too many layers to uncover." % (obj.get_display_name(caller)))
+            caller.msg("Your %s is under too many layers to uncover." % (obj.name))
             return
-				message = "uncovers %s." % _INFLECT.an(obj.get_display_name(caller))
+        message = "{name} uncovers {clothing}.".format(name=caller.name, clothing=_INFLECT.an(obj.name))
         caller.location.msg_contents(message)
         obj.db.covered_by = None
 
@@ -728,6 +694,102 @@ class CmdInventory(MuxCommand):
         caller.msg("|cYou are wearing:|n")
         caller.msg(clothing_table)
 
+class CmdDrop(MuxCommand):
+    """
+    drop something
+
+    Usage:
+      drop <obj>
+
+    Lets you drop an object from your inventory into the
+    location you are currently in.
+    """
+
+    key = "drop"
+    locks = "cmd:all()"
+    arg_regex = r"\s|$"
+
+    def func(self):
+        """Implement command"""
+
+        caller = self.caller
+        if not self.args:
+            caller.msg("Drop what?")
+            return
+
+        obj = caller.search(
+            self.args,
+            location=caller,
+            nofound_string="You aren't carrying any %s." % self.args,
+            multimatch_string="You carry more than one %s:" % self.args,
+        )
+        if not obj:
+            return
+
+        if obj in caller.clothing.all:
+            if not caller.clothing.can_remove(obj):
+                return
+            remove_msg = caller.clothing.remove(obj)
+            caller.location.msg_contents(remove_msg)
+
+        obj.move_to(caller.location, quiet=True)
+        caller.msg("You drop %s." % _INFLECT.an(obj.name) )
+        caller.location.msg_contents("%s drops %s." % (caller.name, _INFLECT.an(obj.name)), exclude=caller)
+        obj.at_drop(caller)
+
+
+class CmdGive(MuxCommand):
+    """
+    give away something to someone
+    Usage:
+      give <inventory obj> = <target>
+    Gives an items from your inventory to another character,
+    placing it in their inventory.
+    """
+
+    key = "give"
+    locks = "cmd:all()"
+    rhs_split = (" to ","=")
+    arg_regex = r"\s|$"
+
+    def func(self):
+        """Implement give"""
+
+        caller = self.caller
+        if not self.args or not self.rhs:
+            caller.msg("Usage: give <object> to <target>")
+            return
+
+        obj = caller.search(
+            self.lhs,
+            location=caller,
+            nofound_string="You aren't carrying %s." % self.lhs,
+            multimatch_string="You carry more than one %s:" % self.lhs,
+        )
+        if not obj:
+            return
+        target = caller.search(self.rhs)
+        if not target:
+            return
+        if target == caller:
+            caller.msg("You keep %s to yourself." % obj.key)
+            return
+        if not obj.location == caller:
+            caller.msg("You are not holding %s." % obj.key)
+            return
+
+        if obj in caller.clothing.all:
+            if not caller.clothing.can_remove(obj):
+                return
+            remove_msg = caller.clothing.remove(obj)
+            caller.location.msg_contents(remove_msg)
+
+        caller.msg("You give %s to %s." % (_INFLECT.an(obj.key), target.key))
+        obj.move_to(target, quiet=True)
+        target.msg("%s gives you %s." % (caller.key, _INFLECT.an(obj.key)))
+        # Call the object's at_give() method.
+        obj.at_give(caller, target)
+
 
 class ClothedCharacterCmdSet(CmdSet):
     """
@@ -748,3 +810,5 @@ class ClothedCharacterCmdSet(CmdSet):
         self.add(CmdCover())
         self.add(CmdUncover())
         self.add(CmdInventory())
+        self.add(CmdDrop())
+        self.add(CmdGive())

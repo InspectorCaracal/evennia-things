@@ -83,8 +83,6 @@ class DiscordBot(Bot):
 		)
 		self.locks.add(lockstring)
 		# set the basics of being a bot
-		script_key = str(self.key)
-		self.scripts.add(DiscordBotRunner, key=script_key)
 		self.is_bot = True
 
 	def start(self):
@@ -119,7 +117,7 @@ class DiscordBot(Bot):
 
 		text = FORMAT_TO_DISCORD.format(user=senders_string, message=message, em=em) if senders else message
 	
-		return message
+		return text
 
 	def channel_msg(self, message, channel, senders=None, **kwargs):
 		"""

@@ -14,29 +14,31 @@ from .settings import FORMAT_TO_EVENNIA, FORMAT_TO_DISCORD, BEANSTALK_HOST, BEAN
 greenclient = greenstalk.Client((BEANSTALK_HOST, BEANSTALK_PORT),watch=['EvToDiscord','DiscordToEv'])
 
 
-class DiscordBotRunner(DefaultScript):
+class DiscordRelayScript(DefaultScript):
 	"""
-	Initializes the bot its attached to and checks the incoming message
-	queue for the bot.
+	Polls the incoming Discord message queue and relays the messages to the
+	relevant Evennia bot.
 	"""
 
 	def at_script_creation(self):
 		"""
 		Called once, when script is created.
 		"""
-		self.key = "botstarter"
-		self.desc = "bot start/relay"
+		self.key = "DiscordRelay"
+		self.desc = "Relays incoming messages from Discord"
 		self.persistent = True
-		self.db.started = False
 		self.interval = 1
+		self.db.bots = {}
 
 	def at_start(self):
 		"""
-		Kick bot into gear.
+		Kick bots into gear.
 		"""
-		if not self.ndb.started:
-			self.account.start()
-			self.ndb.started = True
+		if not self.ndb.bots:
+			self.ndb.bots = self.db.bots
+		
+		for bot in self.ndb.bots.values():
+			bot.start()
 
 	def at_repeat(self):
 		"""
@@ -51,12 +53,20 @@ class DiscordBotRunner(DefaultScript):
 			return
 
 		get_msg = json.loads(job.body)
-		self.account.execute_cmd(**get_msg)
 		greenclient.delete(job)
+		dc_chan = get_msg.pop("channel",0)
+		bot = self.ndb.bots.get(dc_chan)
+		if bot:
+			bot.execute_cmd(**get_msg)
 
 	def at_server_reload(self):
-		self.ndb.started = True
+		self.ndb.bots = self.db.bots
 
+	def add_bot(self, bot, dc_channel):
+		if dc_channel in self.ndb.bots:
+			return False
+		self.db.bots[dc_channel] = bot
+		self.ndb.bots = self.db.bots
 
 class DiscordBot(Bot):
 	"""

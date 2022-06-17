@@ -1,10 +1,11 @@
 from django.conf import settings
 
+from evennia import GLOBAL_SCRIPTS
 from evennia.accounts.models import AccountDB
 from evennia.utils import create, search, logger, utils
 from evennia.utils.utils import class_from_module
 
-from .evbot import DiscordBot
+from .evbot import DiscordBot, DiscordRelayScript
 from .settings import EVBOT_PREFIX
 
 COMMAND_DEFAULT_CLASS = class_from_module(settings.COMMAND_DEFAULT_CLASS)
@@ -48,10 +49,14 @@ class CmdDiscord2Chan(COMMAND_DEFAULT_CLASS):
 	def func(self):
 		"""Setup the discord-channel mapping"""
 
+		relayScript = GLOBAL_SCRIPTS.get("DiscordRelay")
+		if not relayScript:
+			relayScript = create_script("DiscordRelay", typeclass=DiscordRelayScript)
 
 		if "list" in self.switches:
 			# show all connections
-			self.msg("Botlist is not yet implemented.")
+			message = [ f"{account.name} ({account.ndb.ev_channel} to Discord)" for account in relayScript.ndb.bots ]
+			self.msg("\n".join(message))
 			return
 
 		if "disconnect" in self.switches or "remove" in self.switches or "delete" in self.switches:
@@ -72,8 +77,7 @@ class CmdDiscord2Chan(COMMAND_DEFAULT_CLASS):
 
 		if not self.args or not self.rhs:
 			string = (
-				"Usage: discord2chan[/switches] <evennia_channel> ="
-				" <discord channel ID>"
+				"Usage: discord2chan[/switches] <evennia_channel> = <discord channel ID>,<bot name>"
 			)
 			self.msg(string)
 			return
@@ -102,19 +106,25 @@ class CmdDiscord2Chan(COMMAND_DEFAULT_CLASS):
 		botclass = botclass if botclass else DiscordBot
 
 		# create a new bot
-		bot = AccountDB.objects.filter(username__iexact=botname)
-		if bot:
+		bots = AccountDB.objects.filter(username__iexact=botname)
+		if bots:
 			# re-use an existing bot
-			bot = bot[0]
-			if not bot.is_bot:
+			bots = [bot for bot in bots if bot.is_bot]
+			if len(bots) < 1:
 				self.msg("Account '%s' already exists and is not a bot." % botname)
 				return
+			else:
+				bot = bot[0]
 		else:
 			try:
 				bot = create.create_account(botname, None, None, typeclass=botclass)
 			except Exception as err:
 				self.msg("|rError, could not create the bot:|n '%s'." % err)
 				return
+		if not relayScript.add_bot(bot, dc_chan_id):
+			self.msg("There is already a bot sending to that channel.")
+			return
+
 		bot.initialize(
 			ev_channel=channel,
 			dc_botname=botname,

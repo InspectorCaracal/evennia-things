@@ -21,7 +21,7 @@ class EvenniaRelay(discord.Client):
         # we do not want the bot to reply to itself
         if message.author.id == self.user.id:
             return
-        send_msg = { "txt": message.content, "user": message.author.display_name }
+        send_msg = { "txt": message.content, "user": message.author.display_name, "channel": message.channel.id }
         greenclient.use('DiscordToEv')
         greenclient.put(json.dumps(send_msg))
 

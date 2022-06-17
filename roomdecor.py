@@ -30,7 +30,7 @@ from random import randint
 import inflect
 _INFLECT = inflect.engine()
 
-class DecorObject(Object):
+class DecorObject(DefaultObject):
     """
     Base class for any objects that can be used to decorate rooms.
     """
@@ -49,6 +49,8 @@ class DecorObject(Object):
             if not drop:
                 doer.msg("You can't put things there.")
                 return
+        # fallback position if none was set
+        position = "here" if position == True
         # set the placement status
         if position[-1] in ('.','!','?',',',';',':'):
             position = position[:-1]
@@ -84,7 +86,7 @@ class DecorObject(Object):
                 pass
         return success
 
-class DecorRoom(Room):
+class DecorRoom(DefaultRoom):
     """
     Rooms that can be decorated with decor objects.
     """

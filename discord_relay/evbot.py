@@ -97,6 +97,20 @@ class DiscordBot(Bot):
 		"""
 		return
 
+	def at_pre_channel_msg(self, message, channel, senders=None, **kwargs):
+		"""
+		Formats the message to be sent to Discord.
+		"""
+		if senders:
+			sender_string = ", ".join(sender.get_display_name(self) for sender in senders)
+			message = message.lstrip()
+			# catch emotes
+			em = '' if message.startswith((":", ";")) else ':'
+
+		text = FORMAT_TO_DISCORD.format(user=senders_string, message=message, em=em) if senders else message
+	
+		return message
+
 	def channel_msg(self, message, channel, senders=None, **kwargs):
 		"""
 		Evennia channel -> Discord bot
@@ -108,9 +122,6 @@ class DiscordBot(Bot):
 		if not self.ndb.dc_channel:
 			self.ndb.dc_channel = self.db.dc_channel
 
-		prefix, message = message.split(':',maxsplit=1)
-		names = list_to_string(sender.name for sender in senders) if senders else None
-		text = FORMAT_TO_DISCORD.format(user=names, message=message) if names else message
 		# send text to greenstalk
 		greenclient.use('EvToDiscord')
 		send_msg = json.dumps([self.ndb.dc_channel, text])

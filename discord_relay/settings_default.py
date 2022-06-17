@@ -10,7 +10,8 @@ BEANSTALK_PORT = 11300
 FORMAT_TO_EVENNIA = "[|w{user}|n] {message}"
 
 # The formatting for messages being sent to the Discord channel by the bot.
-FORMAT_TO_DISCORD = "**{user}**: {message}"
+# The variable "em" is ':' for normal channel messages, or nothing for channel emotes
+FORMAT_TO_DISCORD = "**{user}**{em} {message}"
 
 # The username prefix for your Evennia bot.
 EVBOT_PREFIX = "DC-"

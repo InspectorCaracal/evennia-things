@@ -35,7 +35,7 @@ Once you have it running, you can add new bots with `discord2chan` from inside E
 
 **WARNING: Don't duplicate evennia/discord pairings!** You can have two bots on the Evennia channel `public` with one sending to Discord someserver.#general and another to someserver.#public just fine, but if you put them both on the same Evennia channel and the same Discord channel, they'll infinite loop each other's messages.
 
-## TO-DO
+### TO-DO
 
 - Rework user/text parsing so channel emotes don't traceback.
 - Implement `/list` switch

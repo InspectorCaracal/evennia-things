@@ -3,7 +3,6 @@ from discord.ext import tasks
 import json
 import greenstalk
 
-#from django.conf import settings
 from settings import DISCORD_TOKEN
 
 _TOKEN = DISCORD_TOKEN

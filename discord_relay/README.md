@@ -33,10 +33,6 @@ If you don't know how to do any of these steps, you probably should be a little 
 
 Once you have it running, you can add new bots with `discord2chan` from inside Evennia to relay any channel messages to any other channel. As long as your Discord app has access to the Discord channels you want to use, it'll manage everything itself.
 
-**WARNING: Don't duplicate evennia/discord pairings!** You can have two bots on the Evennia channel `public` with one sending to Discord someserver.#general and another to someserver.#public just fine, but if you put them both on the same Evennia channel and the same Discord channel, they'll infinite loop each other's messages.
-
 ### TO-DO
 
-- Rework user/text parsing so channel emotes don't traceback.
-- Implement `/list` switch
-- Validate evennia/discord pairing to prevent accidentally creating duplicate pairings.
+- Figure out a nice way to label and display which discord server+channel a bot is relaying to.

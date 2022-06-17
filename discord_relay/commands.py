@@ -22,8 +22,8 @@ class CmdDiscord2Chan(COMMAND_DEFAULT_CLASS):
 	  /delete	 - this will delete the bot and remove the irc connection
 					to the channel. Requires the botname or #dbid as input.
 	  /remove	 - alias to /delete
-	  /disconnect - alias to /delete
-		/list - not yet implemented, but will show all active discord relays
+	  /disconnect    - alias to /delete
+	  /list          - lists all active relays to Discord.
 
 	Example:
 	  discord2chan discordchan = 55555555555,discbot
@@ -55,7 +55,7 @@ class CmdDiscord2Chan(COMMAND_DEFAULT_CLASS):
 
 		if "list" in self.switches:
 			# show all connections
-			message = [ f"{account.name} ({account.ndb.ev_channel} to Discord)" for account in relayScript.ndb.bots.values() ]
+			message = [ f"|w{account.name}|n ({account.ndb.ev_channel.name} to Discord)" for account in relayScript.ndb.bots.values() ]
 			if message:
 				self.msg("\n".join(message))
 			else:

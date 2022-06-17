@@ -71,7 +71,7 @@ class DiscordRelayScript(DefaultScript):
 		return True
 
 	def remove_bot(self, bot):
-		self.db.bots = {key: value for key, value in self.ndb.bots.items() if value == bot}
+		self.db.bots = {key: value for key, value in self.ndb.bots.items() if value != bot}
 		self.ndb.bots = self.db.bots
 
 

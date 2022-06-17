@@ -25,7 +25,7 @@ class EvenniaRelay(discord.Client):
         greenclient.use('DiscordToEv')
         greenclient.put(json.dumps(send_msg))
 
-    @tasks.loop(seconds=5.0)
+    @tasks.loop(seconds=1)
     async def relay(self):
         greenclient.use('EvToDiscord')
 

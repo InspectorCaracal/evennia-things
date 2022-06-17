@@ -9,9 +9,9 @@ from evennia.utils.ansi import strip_ansi
 import greenstalk
 import json
 
-greenclient = greenstalk.Client(('127.0.0.1', 11300),watch=['EvToDiscord','DiscordToEv'])
+from .settings import FORMAT_TO_EVENNIA, FORMAT_TO_DISCORD, BEANSTALK_HOST, BEANSTALK_PORT
 
-from .settings import FORMAT_TO_EVENNIA, FORMAT_TO_DISCORD
+greenclient = greenstalk.Client((BEANSTALK_HOST, BEANSTALK_PORT),watch=['EvToDiscord','DiscordToEv'])
 
 
 class DiscordBotRunner(DefaultScript):

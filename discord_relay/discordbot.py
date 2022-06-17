@@ -3,11 +3,11 @@ from discord.ext import tasks
 import json
 import greenstalk
 
-from settings import DISCORD_TOKEN
+from settings import DISCORD_TOKEN, BEANSTALK_HOST, BEANSTALK_PORT
 
 _TOKEN = DISCORD_TOKEN
 
-greenclient = greenstalk.Client(('127.0.0.1', 11300),watch=['EvToDiscord','DiscordToEv'])
+greenclient = greenstalk.Client((BEANSTALK_HOST, BEANSTALK_PORT),watch=['EvToDiscord','DiscordToEv'])
 
 
 class EvenniaRelay(discord.Client):

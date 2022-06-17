@@ -4,7 +4,7 @@ A (relatively) easy-to-use chat integration between a Discord channel and an Eve
 
 This implementation uses `beanstalkd` to relay the messages - so while this setup is designed to all be run from the same folder, you can easily have your discord bot on a separate machine entirely from evennia. 
 
-**Note** If you are running your Evennia game on Windows server, you will need to implement your own job queue.
+**Note:** If you are running your Evennia game on a Windows server, you will need to implement a different job queue.
 
 ### Installation
 

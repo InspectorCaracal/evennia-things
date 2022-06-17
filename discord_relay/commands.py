@@ -51,12 +51,15 @@ class CmdDiscord2Chan(COMMAND_DEFAULT_CLASS):
 
 		relayScript = GLOBAL_SCRIPTS.get("DiscordRelay")
 		if not relayScript:
-			relayScript = create_script("DiscordRelay", typeclass=DiscordRelayScript)
+			relayScript = create.script(key="DiscordRelay", typeclass=DiscordRelayScript)
 
 		if "list" in self.switches:
 			# show all connections
-			message = [ f"{account.name} ({account.ndb.ev_channel} to Discord)" for account in relayScript.ndb.bots ]
-			self.msg("\n".join(message))
+			message = [ f"{account.name} ({account.ndb.ev_channel} to Discord)" for account in relayScript.ndb.bots.values() ]
+			if message:
+				self.msg("\n".join(message))
+			else:
+				self.msg("There are no discord relays active.")
 			return
 
 		if "disconnect" in self.switches or "remove" in self.switches or "delete" in self.switches:
@@ -69,7 +72,9 @@ class CmdDiscord2Chan(COMMAND_DEFAULT_CLASS):
 				# try dbref match
 				matches = AccountDB.objects.filter(db_is_bot=True, id=dbref)
 			if matches:
-				matches[0].delete()
+				bot = matches[0]
+				relayScript.remove_bot(bot)
+				bot.delete()
 				self.msg("Discord connection destroyed.")
 			else:
 				self.msg("Discord connection/bot could not be removed, does it exist?")
@@ -114,7 +119,7 @@ class CmdDiscord2Chan(COMMAND_DEFAULT_CLASS):
 				self.msg("Account '%s' already exists and is not a bot." % botname)
 				return
 			else:
-				bot = bot[0]
+				bot = bots[0]
 		else:
 			try:
 				bot = create.create_account(botname, None, None, typeclass=botclass)

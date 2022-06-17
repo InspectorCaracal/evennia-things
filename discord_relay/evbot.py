@@ -36,9 +36,10 @@ class DiscordRelayScript(DefaultScript):
 		"""
 		if not self.ndb.bots:
 			self.ndb.bots = self.db.bots
-		
+
 		for bot in self.ndb.bots.values():
-			bot.start()
+			if bot:
+				bot.start()
 
 	def at_repeat(self):
 		"""
@@ -67,6 +68,12 @@ class DiscordRelayScript(DefaultScript):
 			return False
 		self.db.bots[dc_channel] = bot
 		self.ndb.bots = self.db.bots
+		return True
+
+	def remove_bot(self, bot):
+		self.db.bots = {key: value for key, value in self.ndb.bots.items() if value == bot}
+		self.ndb.bots = self.db.bots
+
 
 class DiscordBot(Bot):
 	"""
@@ -88,6 +95,8 @@ class DiscordBot(Bot):
 	def start(self):
 		# fake connection status
 		self.is_connected = True
+		self.ndb.ev_channel = self.db.ev_channel
+		self.ndb.dc_channel = self.db.dc_channel
 
 	def initialize(self, ev_channel, dc_botname, dc_chan_id, **kwargs):
 		channel = search.channel_search(ev_channel)
@@ -98,6 +107,7 @@ class DiscordBot(Bot):
 #		self.username = dc_botname
 		self.db.ev_channel = channel
 		self.db.dc_channel = dc_chan_id
+		self.start()
 
 	def msg(self, text=None, from_obj=None, session=None, options=None, **kwargs):
 		"""
@@ -110,14 +120,14 @@ class DiscordBot(Bot):
 		Formats the message to be sent to Discord.
 		"""
 		if senders:
-			sender_string = ", ".join(sender.get_display_name(self) for sender in senders)
+			logger.log_msg(f"senders: {senders}")
+			sender_string = ", ".join(sender.name for sender in senders)
 			message = message.lstrip()
 			# catch emotes
 			em = '' if message.startswith((":", ";")) else ':'
-
-		text = FORMAT_TO_DISCORD.format(user=senders_string, message=message, em=em) if senders else message
-	
-		return text
+			message = FORMAT_TO_DISCORD.format(user=sender_string, message=message, em=em)
+		logger.log_msg(f"returning {message}")
+		return message
 
 	def channel_msg(self, message, channel, senders=None, **kwargs):
 		"""
@@ -126,13 +136,16 @@ class DiscordBot(Bot):
 		if self in senders:
 			# don't loop our own messages
 			return
+		if kwargs.get("relay"):
+			# don't pass on messages from other Discord relays
+			return
 
 		if not self.ndb.dc_channel:
 			self.ndb.dc_channel = self.db.dc_channel
 
 		# send text to greenstalk
 		greenclient.use('EvToDiscord')
-		send_msg = json.dumps([self.ndb.dc_channel, text])
+		send_msg = json.dumps([self.ndb.dc_channel, message])
 		greenclient.put(send_msg)
 
 	def execute_cmd(self, session=None, txt=None, **kwargs):
@@ -150,9 +163,9 @@ class DiscordBot(Bot):
 		else:
 			text = txt
 
-		if not self.ndb.ev_channel and self.db.ev_channel:
-				# cache channel lookup
+		if not self.ndb.ev_channel:
+			# cache channel lookup
 			self.ndb.ev_channel = self.db.ev_channel
 
 		if self.ndb.ev_channel:
-			self.ndb.ev_channel.msg(text, senders=self)
+			self.ndb.ev_channel.msg(text, senders=self, relay=True)

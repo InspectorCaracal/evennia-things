@@ -124,7 +124,7 @@ class DiscordBot(Bot):
 			sender_string = ", ".join(sender.name for sender in senders)
 			message = message.lstrip()
 			# catch emotes
-			if message.startswith((':',':')):
+			if message.startswith((':',';')):
 				em = ''
 				message = message[1:]
 			else:

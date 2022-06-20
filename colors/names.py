@@ -45,7 +45,7 @@ COLOR_LIST = {
 	57: ('Ultramarine','#5f00ff'),
 	58: ('Antique bronze','#5f5f00'),
 	59: ('Dark grey','#5f5f5f'),
-	60: ('Rain blue','#5f5f87'),
+	60: ('Blue-grey','#5f5f87'),
 	61: ('Twilight','#5f5faf'),
 	62: ('Twilight','#5f5fd7'),
 	63: ('Iris','#5f5fff'),

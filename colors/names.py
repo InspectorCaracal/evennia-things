@@ -19,7 +19,7 @@ COLOR_LIST = {
 	31: ('Cerulean','#0087af'),
 	32: ('Cerulean','#0087d7'),
 	33: ('Azure','#0087ff'),
-	34: ('Grass Green','#00af00'),
+	34: ('Grass green','#00af00'),
 	35: ('Malachite','#00af5f'),
 	36: ('Jade','#00af87'),
 	37: ('Sea green','#00afaf'),

@@ -8,7 +8,7 @@
 
 - This list does not include the 0-15 system colors.
 - The color names are stored here as a dict, where the key is the XTERM color index and the values are a tuple of the color name and the associated hex color.
-- All of the colors are formatted with only the first letter capitalized and with the spelling "grey" rather than "grey".
+- All of the colors are formatted with only the first letter capitalized and with the spelling "grey" rather than "gray".
 - Due to my particular use-case, I have some duplicates in here. If you want all 240 colors to have unique names, you'll need to rename a few. Here are the duplicates:
 	-	Cobalt blue - 20,27
 	-	Cerulean - 31,32

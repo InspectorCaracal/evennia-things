@@ -61,7 +61,7 @@ COLOR_LIST = {
 	73: ('Sea green','#5fafaf'),
 	74: ('Rain blue','#5fafd7'),
 	75: ('Morning glory','#5fafff'),
-	76: ('Grass green','#5fd700'),
+	76: ('Poison green','#5fd700'),
 	77: ('Emerald','#5fd75f'),
 	78: ('Aventurine','#5fd787'),
 	79: ('Aquamarine','#5fd7af'),

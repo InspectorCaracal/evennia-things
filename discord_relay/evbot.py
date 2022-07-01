@@ -161,14 +161,17 @@ class DiscordBot(Bot):
 
 	def execute_cmd(self, session=None, txt=None, **kwargs):
 		"""
-		Take incoming data and send it to connected channel. This is
-		triggered by the bot_data_in Inputfunc.
+		Take incoming data and send it to connected channel.
+		
 		Args:
 			session (Session, optional): not used
-			txt (str, optional):  Command string.
 		Keyword Args:
 			user (str): The name of the user who sent the message.
+			txt (str):  The message to send.
 		"""
+		if not txt:
+			return
+
 		if user := kwargs.get('user'):
 			text = FORMAT_TO_EVENNIA.format(user=user, message=txt)
 		else:

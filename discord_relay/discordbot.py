@@ -7,8 +7,11 @@ from settings import DISCORD_TOKEN, BEANSTALK_HOST, BEANSTALK_PORT
 
 _TOKEN = DISCORD_TOKEN
 
-greenclient = greenstalk.Client((BEANSTALK_HOST, BEANSTALK_PORT),watch=['EvToDiscord','DiscordToEv'])
-
+try:
+	greenclient = greenstalk.Client((BEANSTALK_HOST, BEANSTALK_PORT),watch=['EvToDiscord','DiscordToEv'])
+except:
+	print("ERROR: Cannot connect to beanstalkd - shutting down.")
+	return
 
 class EvenniaRelay(discord.Client):
     async def on_ready(self):

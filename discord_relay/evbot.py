@@ -11,8 +11,11 @@ import json
 
 from .settings import FORMAT_TO_EVENNIA, FORMAT_TO_DISCORD, BEANSTALK_HOST, BEANSTALK_PORT
 
-greenclient = greenstalk.Client((BEANSTALK_HOST, BEANSTALK_PORT),watch=['EvToDiscord','DiscordToEv'])
-
+try:
+	greenclient = greenstalk.Client((BEANSTALK_HOST, BEANSTALK_PORT),watch=['EvToDiscord','DiscordToEv'])
+else:
+	logger.log_err("Cannot connect to beanstalkd! Discord relay will not function.")
+	greenclient = None
 
 class DiscordRelayScript(DefaultScript):
 	"""
@@ -45,6 +48,8 @@ class DiscordRelayScript(DefaultScript):
 		"""
 		Called self.interval seconds to check for new messages from Discord
 		"""
+		if not greenclient:
+			return
 		greenclient.use('DiscordToEv')
 		try:
 			job = greenclient.peek_ready()
@@ -137,6 +142,8 @@ class DiscordBot(Bot):
 		"""
 		Evennia channel -> Discord bot
 		"""
+		if not greenclient:
+			return
 		if self in senders:
 			# don't loop our own messages
 			return

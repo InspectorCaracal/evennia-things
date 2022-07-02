@@ -13,7 +13,7 @@ from .settings import FORMAT_TO_EVENNIA, FORMAT_TO_DISCORD, BEANSTALK_HOST, BEAN
 
 try:
 	greenclient = greenstalk.Client((BEANSTALK_HOST, BEANSTALK_PORT),watch=['EvToDiscord','DiscordToEv'])
-else:
+except:
 	logger.log_err("Cannot connect to beanstalkd! Discord relay will not function.")
 	greenclient = None
 

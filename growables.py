@@ -15,8 +15,8 @@ the object can increment its age.
 To actually allow the object to change, set growth stages via the `add` method.
 
 ```
-self.add("sprout", 60, key="seedling", desc="A tiny seedling, just barely sprouted.")
-self.add("young", 1200, key="small plant", desc="This plant is small but still growing.", leaves=True)
+self.growth.add("sprout", 60, key="seedling", desc="A tiny seedling, just barely sprouted.")
+self.growth.add("young", 1200, key="small plant", desc="This plant is small but still growing.", leaves=True)
 ```
 
 A name for the growth stage and an age (in seconds of game time) are required;
@@ -26,7 +26,7 @@ and a single arg or list of args as the value.
 
 e.g. if your object has a method `at_grow(self, stage)` you can have it trigger like so
 ```
-self.add("sprout", 1200, key="seedling", desc="A tiny seedling, just barely sprouted.", at_grow="sprout")
+self.growth.add("sprout", 1200, key="seedling", desc="A tiny seedling, just barely sprouted.", at_grow="sprout")
 ```
 Note: I haven't tested the callable functionality, but it should work.
 """

@@ -10,7 +10,7 @@ How To Use:
     - Add 'CmdPlace' to your default CharacterCmdSet
     - Create rooms or objects with the classes below to let them
         be decoratable or used for decoration.
-    - Or, use them as parent classes or mixins for your own classes.
+    - Or, use them as parents for your own classes.
 
 Once installed, DecorRooms can be decorated with DecorObjects by using
 the `place` command. By default this is available to all players and 
@@ -22,13 +22,12 @@ will still be sittable, and so on.
 """
 
 from evennia import DefaultObject, DefaultRoom
-from evennia.utils.utils import list_to_string
+from evennia.utils.utils import iter_to_str
 from evennia.commands.cmdset import CmdSet
 from evennia.commands.default.muxcommand import MuxCommand
 
 from random import randint
-import inflect
-_INFLECT = inflect.engine()
+from collections import defaultdict
 
 class DecorObject(DefaultObject):
     """
@@ -62,7 +61,7 @@ class DecorObject(DefaultObject):
             doer.msg("This location can't be decorated.")
             return
 
-        doer.msg(f"You place the {self.get_display_name(self)} {position}.")
+        doer.msg(f"You place the {self.get_display_name(doer)} {position}.")
 
     def at_pre_get(self, getter, **kwargs):
         # if already placed in the room, check decor access
@@ -86,99 +85,70 @@ class DecorObject(DefaultObject):
                 pass
         return success
 
+
 class DecorRoom(DefaultRoom):
     """
     Rooms that can be decorated with decor objects.
     """
-    def get_visible_contents(self, looker, **kwargs):
+    def get_display_things(self, looker, **kwargs):
         """
-        Get all contents of this room that a looker can see. Extends the default
-        functionality by filtering contents by view access and placement status.
-        Args:
-            looker (Object): The entity looking.
-            **kwargs (any): Passed from `return_appearance`. Unused by default.
-        Returns:
-            dict: A dict of lists categorized by type.
-        """
+        Get the 'things' component of the object description. Called by `return_appearance`.
 
-        def filter_visible(obj_list):
-            return [obj for obj in obj_list if obj != looker and obj.access(looker, "view") and not obj.db.placed]
-
-        return {
-            "exits": filter_visible(self.contents_get(content_type="exit")),
-            "characters": filter_visible(self.contents_get(content_type="character")),
-            "things": filter_visible(self.contents_get(content_type="object")),
-        }
-
-    def return_appearance(self, looker, **kwargs):
-        """
-        Overloads the default `return_appearance` in order to include decor items
-        separately.
         Args:
             looker (Object): Object doing the looking.
-            **kwargs (dict): Optional arguments for other functionality.
-                    This is passed into the helper methods and
-                    into `get_display_name` and `get_desc` calls.
+            **kwargs: Arbitrary data for use when overriding.
         Returns:
-            str: The description of the room.
+            str: The things display data.
+
         """
 
-        if not looker:
-            return ""
+        def _filter_visible(obj_list):
+            # we use a modified filter that ignores objects that have been placed as decor
+            return (obj for obj in obj_list if not obj.db.placed and obj != looker and obj.access(looker, "view"))
 
-        # ourselves
-        name = self.get_display_name(looker, **kwargs)
-        desc = self.db.desc
-        decor = self.db.decor_desc
+        # sort and handle same-named things
+        things = _filter_visible(self.contents_get(content_type="object"))
+
+        grouped_things = defaultdict(list)
+        for thing in things:
+            grouped_things[thing.get_display_name(looker, **kwargs)].append(thing)
+
+        thing_names = []
+        for thingname, thinglist in sorted(grouped_things.items()):
+            nthings = len(thinglist)
+            thing = thinglist[0]
+            singular, plural = thing.get_numbered_name(nthings, looker, key=thingname)
+            thing_names.append(singular if nthings == 1 else plural)
+        thing_names = iter_to_str(thing_names)
+        return f"\n|wYou see:|n {thing_names}" if thing_names else ""
+
+    def get_display_desc(self, looker, **kwargs):
+        """
+        Appends the current decor description to the room's description.
+        """
+        desc = super().get_display_desc(looker, **kwargs)
         
-        # contents
-        content_names_map = self.get_content_names(looker, **kwargs)
-        exits = list_to_string(content_names_map["exits"])
-        characters = list_to_string(content_names_map["characters"])
-        things = list_to_string(content_names_map["things"])
+        if self.db.decor_desc:
+            desc = f"{desc} {decor_desc}" if desc else decor_desc
 
-        # we want the decor to be the room desc if there is no base desc set
-        if not desc:
-            desc = decor
-        else:
-            # if there is a desc, append with a linebreak
-            desc += f"\n{decor}" if decor else ""
-        
-        # fallback in case it's still empty
-        if not desc:
-            desc = "You see nothing special."
-
-        # populate the appearance_template string. It's a good idea to strip it and
-        # let the client add any extra spaces instead.
-        return self.appearance_template.format(
-            header="",
-            name=name,
-            desc=desc,
-            exits=f"|wExits:|n {exits}" if exits else "",
-            characters=f"\n|wCharacters:|n {characters}" if characters else "",
-            things=f"\n|wYou see:|n {things}" if things else "",
-            footer="",
-        ).strip()
+        return desc
 
     def update_decor(self):
         """
         Re-processes all placed decor objects to generate their description.
         """
         decor_descs = []
-        placements = {}
+        placements = defaultdict(list)
         # get a list of all objects that have been placed as decor
         decor_list = [obj for obj in self.contents_get(content_type="object") if obj.db.placed]
 
         # group decor by position
         for decor in decor_list:
-            if decor.db.placed in placements.keys():
-                placements[decor.db.placed].append(_INFLECT.an(decor.get_display_name(self)))
-            else:
-                placements[decor.db.placed] = [_INFLECT.an(decor.get_display_name(self))]
+            placements[decor.db.placed].append(decor.get_numbered_name(1,self)[0])
 
         for position, names_list in placements.items():
             verb = "is" if len(names_list) == 1 else "are"
-            names = list_to_string(names_list)
+            names = iter_to_str(names_list)
             # liven up the decor desc a bit by occasionally swapping the name/position order
             if randint(1,4) == 1:
                 desc = f"{position} {verb} {names}."
@@ -247,7 +217,6 @@ class CmdPlace(MuxCommand):
 
         # do the actual placement
         obj.place(caller, caller.location, position)
-
 
 
 class DecorCmdSet(CmdSet):
